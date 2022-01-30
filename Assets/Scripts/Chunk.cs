@@ -8,6 +8,10 @@ public class Chunk
     public short[,,] voxelMap = new short[VoxelData.ChunkWidth, VoxelData.ChunkHeight, VoxelData.ChunkWidth];
     public bool isVoxelMapPopulated = false;
 
+    public Queue<VoxelMod> modifications = new Queue<VoxelMod>();
+
+    public Vector3 globalChunkPos;
+
     private GameObject chunkObject;
     private MeshRenderer meshRenderer;
     private MeshFilter meshFilter;
@@ -45,10 +49,7 @@ public class Chunk
             InitChunk();
     }
 
-    public Vector3 GlobalChunkPos
-    {
-        get { return chunkObject.transform.position; }
-    }
+    
 
     public void InitChunk()
     {
@@ -63,6 +64,7 @@ public class Chunk
         chunkObject.transform.SetParent(world.transform);
         chunkObject.transform.position = new Vector3(coord.x * VoxelData.ChunkWidth, 0, coord.z * VoxelData.ChunkWidth);
         chunkObject.name = "Chunk " + coord.x + " " + coord.z;
+        globalChunkPos = chunkObject.transform.position;
 
         PopulateVoxelMap();
         UpdateChunk();
@@ -87,7 +89,7 @@ public class Chunk
     {
         Vector3Int pos = VectFToI(posF);
         if (!IsVoxelInChunk(pos))
-            return world.CheckIfVoxelTransparent(pos + GlobalChunkPos);
+            return world.CheckIfVoxelTransparent(pos + globalChunkPos);
         return world.blockTypes[voxelMap[pos.x, pos.y, pos.z]].isTransparent;
     }
     public void EditVoxel(Vector3 _pos, short newId)
@@ -112,7 +114,7 @@ public class Chunk
             Vector3 currentVoxel = thisVoxel + VoxelData.faceChecks[side]; 
 
             if(!IsVoxelInChunk(new Vector3Int((int)(currentVoxel.x), (int)(currentVoxel.y), (int)(currentVoxel.z)))){
-                world.GetChunkFromVector3(currentVoxel + GlobalChunkPos).UpdateChunk();
+                world.GetChunkFromVector3(currentVoxel + globalChunkPos).UpdateChunk();
             }
         }
     }
@@ -120,16 +122,22 @@ public class Chunk
     public short GetVoxelFromGlVect3(Vector3 _pos)
     {
         Vector3Int pos = Vector3Int.FloorToInt(_pos);
-        pos.x -= Mathf.FloorToInt(chunkObject.transform.position.x); // Get IN Chunk position from global position
-        pos.z -= Mathf.FloorToInt(chunkObject.transform.position.z);
+        pos.x -= Mathf.FloorToInt(globalChunkPos.x); // Get IN Chunk position from global position
+        pos.z -= Mathf.FloorToInt(globalChunkPos.z);
 
 
 
         return voxelMap[pos.x, pos.y, pos.z];
     }
 
-    void UpdateChunk()
+    public void UpdateChunk()
     {
+        while(modifications.Count > 0)
+        {
+            VoxelMod v = modifications.Dequeue();
+            Vector3 pos = v.position -= globalChunkPos;
+            voxelMap[(int)pos.x, (int)pos.y, (int)pos.z] = v.id;
+        }
         ClearMeshData();
         for (int y = 0; y < VoxelData.ChunkHeight; y++)
         {
@@ -152,6 +160,7 @@ public class Chunk
         vertexIndex = 0;
         vertices.Clear();
         triangles.Clear();
+        transparentTriangles.Clear();
         uvs.Clear();
     }
 
@@ -166,7 +175,7 @@ public class Chunk
             {
                 for (int z = 0; z < VoxelData.ChunkWidth; z++)
                 {
-                    voxelMap[x,y,z] = world.GetVoxel(new Vector3(x,y,z)+GlobalChunkPos);
+                    voxelMap[x,y,z] = world.GetVoxel(new Vector3(x,y,z)+globalChunkPos);
                 }
             }
         }

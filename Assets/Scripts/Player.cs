@@ -100,9 +100,15 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        GetPlayerInputs();
-        placeCursorBlock();
-        
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            world.InUI = !world.InUI;
+        }
+        if (!world.InUI)
+        {
+            GetPlayerInputs();
+            placeCursorBlock();
+        }        
     }
 
     private void placeCursorBlock()
@@ -132,13 +138,16 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        CalculateVelocity();
-        if (jumpRequest)
-            Jump();
+        if (!world.InUI)
+        {
+            CalculateVelocity();
+            if (jumpRequest)
+                Jump();
 
-        transform.Rotate(Vector3.up * mouseHorizontal * camSensitivity);
-        cam.Rotate(Vector3.right * -mouseVertical * camSensitivity);
-        transform.Translate(velocity, Space.World);
+            transform.Rotate(Vector3.up * mouseHorizontal * camSensitivity);
+            cam.Rotate(Vector3.right * -mouseVertical * camSensitivity);
+            transform.Translate(velocity, Space.World);
+        }
     }
 
     private void Jump()
