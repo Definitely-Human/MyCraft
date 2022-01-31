@@ -18,4 +18,10 @@ public class ItemStack
         get => ammount;
         set => ammount = value;
     }
+
+    public ItemStack(short _id, int _ammount)
+    {
+        Id = _id;
+        Ammount = _ammount;
+    }
 }

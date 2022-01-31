@@ -12,7 +12,6 @@ public class Player : MonoBehaviour
     public float sprintSpeed = 6f;
     public float jumpForce = 5f;
     public float gravity = -9.81f;
-    public float camSensitivity = 2;
     public float playerWidth = 0.15f;
 
     private Transform cam;
@@ -32,7 +31,7 @@ public class Player : MonoBehaviour
     public float reach = 8f;
 
 
-    public short selectedBlockIndex = 1;
+    public ToolBar toolBar;
     public bool Front
     {
         get
@@ -95,7 +94,7 @@ public class Player : MonoBehaviour
         cam = GameObject.Find("Main Camera").transform;
         world = GameObject.Find("World").GetComponent<World>();
 
-        Cursor.lockState = CursorLockMode.Locked;
+        world.InUI = false;
     }
 
     private void Update()
@@ -144,8 +143,8 @@ public class Player : MonoBehaviour
             if (jumpRequest)
                 Jump();
 
-            transform.Rotate(Vector3.up * mouseHorizontal * camSensitivity);
-            cam.Rotate(Vector3.right * -mouseVertical * camSensitivity);
+            transform.Rotate(Vector3.up * mouseHorizontal * world.settings.mouseSensitivity);
+            cam.Rotate(Vector3.right * -mouseVertical * world.settings.mouseSensitivity);
             transform.Translate(velocity, Space.World);
         }
     }
@@ -190,6 +189,9 @@ public class Player : MonoBehaviour
 
     private void GetPlayerInputs()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Application.Quit();
+
         horizontal = Input.GetAxis("Horizontal");
         vertical = Input.GetAxis("Vertical");
         mouseHorizontal = Input.GetAxis("Mouse X");
@@ -211,9 +213,16 @@ public class Player : MonoBehaviour
             // Destroy Block
             if (Input.GetMouseButtonDown(0))
                 world.GetChunkFromVector3(highlightBlock.position).EditVoxel(highlightBlock.position, 0);
-            if (Input.GetMouseButtonDown(1))
-                world.GetChunkFromVector3(placeBlock.position).EditVoxel(placeBlock.position, selectedBlockIndex);
 
+            // Place Block
+            if (Input.GetMouseButtonDown(1))
+            {
+                if (toolBar.slots[toolBar.slotIndex].HasItem)
+                {
+                    world.GetChunkFromVector3(placeBlock.position).EditVoxel(placeBlock.position, toolBar.slots[toolBar.slotIndex].itemSlot.stack.Id);
+                    toolBar.slots[toolBar.slotIndex].itemSlot.Take(1);
+                }
+            }
         }
     }
 
