@@ -8,7 +8,7 @@ public class World : MonoBehaviour
 {
     public Settings settings;
     public Transform player;
-    public BiomeAttributes biome;
+    public BiomeAttributes[] biomes;
 
     [Header("World Data")]
     public Vector3 spawnPosition;
@@ -16,7 +16,7 @@ public class World : MonoBehaviour
     [Header("Textures")]
     public Material material;
     public Material transparentMaterial;
-    public BlockType[] blockTypes;
+    public Block[] blockTypes;
 
     [Header("UI")]
     public GameObject debugScreen;
@@ -231,7 +231,7 @@ public class World : MonoBehaviour
         }
     }
 
-    private bool IsVoxelInWorld(Vector3 pos)
+    public bool IsVoxelInWorld(Vector3 pos)
     {
         if(pos.x >= 0 && pos.x < VoxelData.WorldWidthInVoxels && pos.y >= 0 && pos.y < VoxelData.WorldHeightInVoxels && pos.z >= 0 && pos.z < VoxelData.WorldWidthInVoxels)
         {
@@ -308,7 +308,9 @@ public class World : MonoBehaviour
         while(modifications.Count > 0)
         {
             Queue<VoxelMod> queue = modifications.Dequeue();
-
+            if (queue == null)
+                Debug.Log("null");
+         
             while (queue.Count > 0)
             {
 
@@ -332,6 +334,42 @@ public class World : MonoBehaviour
         applyingModifications = false;
     }
 
+    private BiomeAttributes SelectBiome(Vector3 pos,out int terrainHeight)
+    {
+        int solidGroundHeight = 64;
+        float sumOfHeights = 0f;
+        int count = 0;
+        float strongestWeight = 0;
+        int strongestBiomeIndex = 0;
+        BiomeAttributes biome;
+
+        for (int i = 0; i < biomes.Length; i++)
+        {
+            float weight = Noise.Get2DPerlin(new Vector2(pos.x, pos.z), biomes[i].offset, biomes[i].scale);
+
+            if (weight > strongestWeight)
+            {
+                strongestWeight = weight;
+                strongestBiomeIndex = i;
+            }
+
+            float height = Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biomes[i].terrainScale) * biomes[i].terrainHeight * weight;
+
+            if (height > 0)
+            {
+                sumOfHeights += height;
+                count++;
+            }
+
+        }
+
+
+        biome = biomes[strongestBiomeIndex];
+        sumOfHeights /= count;
+        terrainHeight = Mathf.FloorToInt(sumOfHeights + solidGroundHeight);
+        return biome;
+    }
+
     public short GetVoxel(Vector3 pos)
     {
 
@@ -345,9 +383,13 @@ public class World : MonoBehaviour
         if (yPos == 0)
             return 1;
 
+        // Biome Selection pass
+        int terrainHeight = 0;
+        BiomeAttributes biome = SelectBiome(pos,out terrainHeight);
+        
         // Basic terrain pass
 
-        int terrainHeight = Mathf.FloorToInt(Noise.Get2DPerling(new Vector2(pos.x,pos.z),0, biome.terrainScale) * biome.terrainHeight + biome.solidGroundHeight);
+        
         short voxelValue = 0;
 
         if (yPos > terrainHeight)
@@ -356,11 +398,11 @@ public class World : MonoBehaviour
         }
         else if (yPos == terrainHeight)
         {
-            voxelValue = 3;
+            voxelValue = biome.surfaceBlock;
         }
         else if (yPos < terrainHeight && yPos > terrainHeight - 4)
         {
-            voxelValue = 4;
+            voxelValue = biome.subsurfaceBlock;
         }
         else
             voxelValue = 2;
@@ -378,14 +420,14 @@ public class World : MonoBehaviour
 
         // Tree Pass
 
-        if(yPos == terrainHeight)
+        if(yPos == terrainHeight && biome.placeMajorFlora)
         {
-            if (Noise.Get2DPerling(new Vector2(pos.x, pos.z), 0, biome.treeZoneScale) > biome.treeZoneThereshold)
+            if (Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biome.MajorFloraZoneScale) > biome.MajorFloraZoneThereshold)
             {
-                voxelValue = 4;
-                if(Noise.Get2DPerling(new Vector2(pos.x,pos.z),0,biome.treePlacementScale)> biome.treePlacementThereshold)
+                voxelValue = biome.subsurfaceBlock;
+                if(Noise.Get2DPerlin(new Vector2(pos.x,pos.z),0, biome.MajorFloraPlacementScale) > biome.MajorFloraPlacementThereshold)
                 {
-                    modifications.Enqueue(Structure.MakeTree(pos, biome.minTreeSize, biome.maxTreeSize));
+                    modifications.Enqueue(Structure.GenerateMajorFlora(biome.majorFloraIndex,pos, biome.minSize, biome.maxSize));
                 }
             }
         }

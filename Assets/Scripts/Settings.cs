@@ -11,6 +11,7 @@ public class Settings
     [Header("Performance")]
     public int ViewDistanceInChunks;
     public bool enableThreading;
+    public bool enableAnimatedChunks;
 
 
     [Header("Controls")]

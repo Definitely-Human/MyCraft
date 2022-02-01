@@ -208,17 +208,19 @@ public class Player : MonoBehaviour
         }
         
 
-        if (highlightBlock.gameObject.activeSelf)
+        if (highlightBlock.gameObject.activeSelf )
         {
             // Destroy Block
             if (Input.GetMouseButtonDown(0))
-                world.GetChunkFromVector3(highlightBlock.position).EditVoxel(highlightBlock.position, 0);
+                if( world.GetChunkFromVector3(highlightBlock.position) != null && world.GetChunkFromVector3(highlightBlock.position).IsEditable)
+                    world.GetChunkFromVector3(highlightBlock.position).EditVoxel(highlightBlock.position, 0);
 
             // Place Block
             if (Input.GetMouseButtonDown(1))
             {
-                if (toolBar.slots[toolBar.slotIndex].HasItem)
+                if (toolBar.slots[toolBar.slotIndex].HasItem && world.GetChunkFromVector3(placeBlock.position) != null && world.GetChunkFromVector3(placeBlock.position).IsEditable)
                 {
+
                     world.GetChunkFromVector3(placeBlock.position).EditVoxel(placeBlock.position, toolBar.slots[toolBar.slotIndex].itemSlot.stack.Id);
                     toolBar.slots[toolBar.slotIndex].itemSlot.Take(1);
                 }
