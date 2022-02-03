@@ -102,12 +102,7 @@ public class World : MonoBehaviour
 
         if (!settings.enableThreading)
         {
-            if (modifications.Count > 0 && !applyingModifications)
-            {
-                ApplyModifications();
-            }
-            if (chunksToUpdate.Count > 0)
-                UpdateChunks();
+            CallUpdates();
         }
 
         if (chunksToCreate.Count > 0)
@@ -132,16 +127,21 @@ public class World : MonoBehaviour
     {
         while (true)
         {
-            if (modifications.Count > 0 && !applyingModifications)
-            {
-                ApplyModifications();
-            }
-            if (chunksToUpdate.Count > 0)
-                UpdateChunks();
+            CallUpdates();
         }
     }
 
     
+
+    private void CallUpdates()
+    {
+        if (modifications.Count > 0 && !applyingModifications)
+        {
+            ApplyModifications();
+        }
+        if (chunksToUpdate.Count > 0)
+            UpdateChunks();
+    }
 
     private void GenerateWorld()
     {
@@ -334,7 +334,7 @@ public class World : MonoBehaviour
         applyingModifications = false;
     }
 
-    private BiomeAttributes SelectBiome(Vector3 pos,out int terrainHeight)
+    public BiomeAttributes SelectBiome(Vector3 pos,out int terrainHeight)
     {
         int solidGroundHeight = 64;
         float sumOfHeights = 0f;
@@ -353,8 +353,8 @@ public class World : MonoBehaviour
                 strongestBiomeIndex = i;
             }
 
+            //float height = Noise.Get2DPerlinOct(new Vector2(pos.x, pos.z), 0, biomes[i].terrainScale, 3, 0.5f,2f) * biomes[i].terrainHeight * weight;
             float height = Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biomes[i].terrainScale) * biomes[i].terrainHeight * weight;
-
             if (height > 0)
             {
                 sumOfHeights += height;
@@ -384,28 +384,36 @@ public class World : MonoBehaviour
             return 1;
 
         // Biome Selection pass
-        int terrainHeight = 0;
-        BiomeAttributes biome = SelectBiome(pos,out terrainHeight);
-        
+        Chunk thisChunk = GetChunkFromVector3(pos);
+        int terrainHeight;
+        BiomeAttributes biome;
+        if (thisChunk != null && thisChunk.isBiomeAndHeightPopulated)
+        {
+            terrainHeight = thisChunk.heightMap[Mathf.FloorToInt(pos.x) % VoxelData.ChunkWidth, Mathf.FloorToInt(pos.z) % VoxelData.ChunkWidth];
+            biome = thisChunk.biomeMap[Mathf.FloorToInt(pos.x) % VoxelData.ChunkWidth, Mathf.FloorToInt(pos.z) % VoxelData.ChunkWidth];
+        }
+        else
+        {
+            biome = SelectBiome(pos, out terrainHeight);
+        }
         // Basic terrain pass
 
-        
+        int depth = terrainHeight - yPos;
         short voxelValue = 0;
 
-        if (yPos > terrainHeight)
+        if (depth < 0)
         {
             return 0;
         }
-        else if (yPos == terrainHeight)
+        else if (depth >= biome.allLayerLength)
         {
-            voxelValue = biome.surfaceBlock;
-        }
-        else if (yPos < terrainHeight && yPos > terrainHeight - 4)
-        {
-            voxelValue = biome.subsurfaceBlock;
+            voxelValue = 2;
         }
         else
-            voxelValue = 2;
+        {
+            voxelValue = biome.getIdFromDepth(depth);
+        }
+            
 
         // Second pass
 
@@ -424,7 +432,7 @@ public class World : MonoBehaviour
         {
             if (Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biome.MajorFloraZoneScale) > biome.MajorFloraZoneThereshold)
             {
-                voxelValue = biome.subsurfaceBlock;
+                //voxelValue = biome.subsurfaceBlock;
                 if(Noise.Get2DPerlin(new Vector2(pos.x,pos.z),0, biome.MajorFloraPlacementScale) > biome.MajorFloraPlacementThereshold)
                 {
                     modifications.Enqueue(Structure.GenerateMajorFlora(biome.majorFloraIndex,pos, biome.minSize, biome.maxSize));

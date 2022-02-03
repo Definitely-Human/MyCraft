@@ -13,8 +13,12 @@ public class BiomeAttributes: ScriptableObject {
     public int terrainHeight;
     public float terrainScale;
 
-    public short surfaceBlock;
-    public short subsurfaceBlock;
+    public int noiseId;
+
+    [Header("Blocks Settings")]
+    public int[] layerLength;
+    public short[] layerBlock;
+    public int allLayerLength;
 
     [Header("Major Flora")]
     public int majorFloraIndex;
@@ -30,6 +34,25 @@ public class BiomeAttributes: ScriptableObject {
     public int minSize = 5;
 
     public Lode[] lodes;
+
+    public short getIdFromDepth(int depth)
+    {
+        for(int i = 0;i < layerLength.Length;i++ )
+        {
+            if ((depth - layerLength[i]) >= 0)
+                depth -= layerLength[i];
+            else
+                return layerBlock[i];
+        }
+        return 0;
+    }
+
+    private void OnEnable()
+    {
+        allLayerLength = 0;
+        foreach(int layer in layerLength)
+            allLayerLength += layer;
+    }
 }
 
 [System.Serializable]

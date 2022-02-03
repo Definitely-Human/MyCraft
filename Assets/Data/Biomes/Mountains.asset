@@ -10,36 +10,37 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e0a694ffb88222d48a3349ce7222df38, type: 3}
-  m_Name: Grasslands
+  m_Name: Mountains
   m_EditorClassIdentifier: 
-  biomeName: Grasslands
-  offset: 1000
-  scale: 0.3
-  terrainHeight: 15
-  terrainScale: 0.15
-  layerLength: 0100000004000000
-  layerBlock: 03000400
-  allLayerLength: 5
-  majorFloraIndex: 0
+  biomeName: 
+  offset: 6666
+  scale: 0.05
+  terrainHeight: 128
+  terrainScale: 0.2
+  noiseId: 0
+  layerLength: 
+  layerBlock: 
+  allLayerLength: 0
+  majorFloraIndex: 3
   MajorFloraZoneScale: 1.3
   MajorFloraZoneThereshold: 0.6
   MajorFloraPlacementScale: 15
-  MajorFloraPlacementThereshold: 0.872
+  MajorFloraPlacementThereshold: 0.8
   placeMajorFlora: 1
   maxSize: 12
   minSize: 5
   lodes:
-  - lodeName: Dirt
-    blockID: 4
-    minHeight: 10
-    maxHeight: 255
-    scale: 0.2
-    threshold: 0.5
-    noiseOffset: 0
   - lodeName: Gravel
     blockID: 19
-    minHeight: 48
-    maxHeight: 96
+    minHeight: 1
+    maxHeight: 192
     scale: 0.1
-    threshold: 0.5
-    noiseOffset: 500
+    threshold: 0.6
+    noiseOffset: 234
+  - lodeName: Air
+    blockID: 0
+    minHeight: 1
+    maxHeight: 192
+    scale: 0.03
+    threshold: 0.8
+    noiseOffset: 456

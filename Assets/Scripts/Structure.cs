@@ -21,6 +21,9 @@ public static class Structure
     public static Queue<VoxelMod> MakeTree (Vector3 position, int minTrunkHeight, int maxTrunkHeight)
     {
         Queue<VoxelMod> queue = new Queue<VoxelMod>();
+
+        if (position.x % 2 == 1 || position.z % 2 == 1)
+            return queue;
         int height = (int)(maxTrunkHeight * Noise.Get2DPerlin(new Vector2(position.x, position.z), 250f, 3f));
 
         if (height < minTrunkHeight)
@@ -55,9 +58,9 @@ public static class Structure
         for (int i = 1; i < height; i++)
             queue.Enqueue(new VoxelMod(new Vector3(position.x, position.y + i, position.z), 12));
 
+        queue.Enqueue(new VoxelMod(new Vector3(position.x, position.y + height, position.z), 12));
 
 
-        
         return queue;
     }
 }

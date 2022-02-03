@@ -14,11 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: Desert
   offset: 2000
-  scale: 0.06
+  scale: 0.2
   terrainHeight: 32
   terrainScale: 0.05
-  surfaceBlock: 5
-  subsurfaceBlock: 5
+  noiseId: 0
+  layerLength: 0400000003000000
+  layerBlock: 05001200
+  allLayerLength: 7
   majorFloraIndex: 1
   MajorFloraZoneScale: 1.05
   MajorFloraZoneThereshold: 0.744

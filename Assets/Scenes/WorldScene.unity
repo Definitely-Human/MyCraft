@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.2850269, g: 0.3713935, b: 0.49601045, a: 1}
+  m_IndirectSpecularColor: {r: 0.20544562, g: 0.31970283, b: 0.422934, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -623,6 +623,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f5357e4d7ea13e54eb3c7fc383d601ef, type: 2}
   - {fileID: 11400000, guid: 4ca390215827b3548a090df67d798ef3, type: 2}
   - {fileID: 11400000, guid: f646636293f503d4b8499d4f7fbf7215, type: 2}
+  - {fileID: 11400000, guid: 7527b69f97633764a9bbb52d57cbe8dd, type: 2}
   spawnPosition: {x: 0, y: 0, z: 0}
   material: {fileID: 2100000, guid: 8da35a9bdece65740b75b6a38192acd5, type: 2}
   transparentMaterial: {fileID: 2100000, guid: 00385c81eb50aef469c58fc94629a60c, type: 2}
@@ -645,6 +646,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c6214873c563fa841b1bf02b45da9eae, type: 2}
   - {fileID: 11400000, guid: e59e3819ee5bd1142944e02a9124056f, type: 2}
   - {fileID: 11400000, guid: 98b5a6f502a50b94991490afe716aee9, type: 2}
+  - {fileID: 11400000, guid: 1d19a8b18ec7ef24dbf4f9ae35dacc63, type: 2}
+  - {fileID: 11400000, guid: 6231b1c80c5a84744a127f587809ef32, type: 2}
   debugScreen: {fileID: 103602158}
   creativeInventoryWindow: {fileID: 1235568217}
   cursorSlot: {fileID: 1725132686}
@@ -2065,7 +2068,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1555536809}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 886, y: 236, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1687258585}

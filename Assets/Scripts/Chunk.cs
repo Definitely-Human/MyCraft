@@ -12,6 +12,11 @@ public class Chunk
 
     public Vector3 globalChunkPos;
 
+
+    public BiomeAttributes[,] biomeMap = new BiomeAttributes[VoxelData.ChunkWidth, VoxelData.ChunkWidth];
+    public int[,] heightMap = new int[VoxelData.ChunkWidth, VoxelData.ChunkWidth];
+    public bool isBiomeAndHeightPopulated = false;
+
     private GameObject chunkObject;
     private MeshRenderer meshRenderer;
     private MeshFilter meshFilter;
@@ -23,6 +28,7 @@ public class Chunk
     private List<int> transparentTriangles = new List<int>();
     private Material[] materials = new Material[2];
     private List<Vector2> uvs = new List<Vector2>();
+
 
     private World world;
 
@@ -69,6 +75,7 @@ public class Chunk
         meshFilter = chunkObject.AddComponent<MeshFilter>();
         meshRenderer = chunkObject.AddComponent<MeshRenderer>();
 
+
         materials[0] = world.material;
         materials[1] = world.transparentMaterial;
         meshRenderer.materials = materials;
@@ -77,6 +84,8 @@ public class Chunk
         chunkObject.transform.position = new Vector3(coord.x * VoxelData.ChunkWidth, 0, coord.z * VoxelData.ChunkWidth);
         chunkObject.name = "Chunk " + coord.x + " " + coord.z;
         globalChunkPos = chunkObject.transform.position;
+
+        FillBiomeAndHeight();
 
         PopulateVoxelMap();
     }
@@ -184,7 +193,19 @@ public class Chunk
         normals.Clear();
     }
 
-   
+    public void FillBiomeAndHeight()
+    {
+        for (int x = 0; x < VoxelData.ChunkWidth; x++)
+        {
+            for (int z = 0; z < VoxelData.ChunkWidth; z++)
+            {
+                int height;
+                biomeMap[x, z] = world.SelectBiome(globalChunkPos + new Vector3Int(x, 0, z), out height);
+                heightMap[x, z] = height;
+            }
+        }
+        isBiomeAndHeightPopulated = true;
+    }
 
     void PopulateVoxelMap()
     {
@@ -229,7 +250,7 @@ public class Chunk
 
                 AddTexture(world.blockTypes[blockId].GetTextureId(side));
 
-                if (!world.blockTypes[neighbor.id].renderNeighborFaces)
+                if (!world.blockTypes[blockId].renderNeighborFaces)
                 {
                     triangles.Add(vertexIndex);
                     triangles.Add(vertexIndex + 1);
@@ -243,9 +264,9 @@ public class Chunk
                     transparentTriangles.Add(vertexIndex);
                     transparentTriangles.Add(vertexIndex + 1);
                     transparentTriangles.Add(vertexIndex + 2);
-                   transparentTriangles.Add(vertexIndex + 2);
+                    transparentTriangles.Add(vertexIndex + 2);
                     transparentTriangles.Add(vertexIndex + 1);
-                   transparentTriangles.Add(vertexIndex + 3);
+                    transparentTriangles.Add(vertexIndex + 3);
                 }
 
 
@@ -270,6 +291,7 @@ public class Chunk
 
 
         mesh.normals = normals.ToArray();
+        
         meshFilter.mesh = mesh;
     }
 
