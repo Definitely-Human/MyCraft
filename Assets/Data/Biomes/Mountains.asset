@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: 
   offset: 6666
-  scale: 0.05
+  scale: 0.005
   terrainHeight: 128
-  terrainScale: 0.2
+  terrainScale: 0.03
   noiseId: 0
+  rarity: 0.6
   layerLength: 
   layerBlock: 
   allLayerLength: 0
@@ -26,7 +27,7 @@ MonoBehaviour:
   MajorFloraZoneThereshold: 0.6
   MajorFloraPlacementScale: 15
   MajorFloraPlacementThereshold: 0.8
-  placeMajorFlora: 1
+  placeMajorFlora: 0
   maxSize: 12
   minSize: 5
   lodes:

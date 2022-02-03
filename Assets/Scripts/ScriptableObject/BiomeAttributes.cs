@@ -14,6 +14,7 @@ public class BiomeAttributes: ScriptableObject {
     public float terrainScale;
 
     public int noiseId;
+    public float rarity;
 
     [Header("Blocks Settings")]
     public int[] layerLength;

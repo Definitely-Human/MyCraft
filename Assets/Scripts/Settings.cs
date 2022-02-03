@@ -6,18 +6,17 @@ using UnityEngine;
 public class Settings 
 {
     [Header("Game Data")]
-    public string version;
+    public string version = "0.0.1";
 
     [Header("Performance")]
-    public int ViewDistanceInChunks;
-    public bool enableThreading;
-    public bool enableAnimatedChunks;
+    public int ViewDistanceInChunks = 10;
+    public bool enableThreading = true;
+    public bool enableAnimatedChunks = false;
 
 
     [Header("Controls")]
     [Range(0.3f,10f)]
-    public float mouseSensitivity;
+    public float mouseSensitivity = 3.5f;
 
-    [Header("World Gen")]
-    public int worldSeed;
+    
 }

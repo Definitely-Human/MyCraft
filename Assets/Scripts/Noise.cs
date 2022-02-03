@@ -9,17 +9,27 @@ public static class Noise{
         return 1f;
     }*/
 
+    private static Vector2 Offset2D(Vector2 position,float offset)
+    {
+        position.x += (offset + VoxelData.seed + 0.1f);
+        position.y += (offset + VoxelData.seed + 0.1f);
+        return position;
+    }
+
     public static float Get2DPerlinOct(Vector2 position, float offset, float scale, int octaves = 1,float persistance = 1, float lacunacrity = 1)
     {
         if (scale <= 0) scale = 0.00001f;
+
+
+        position = Offset2D(position,offset);
         float noise = 0;
 
         float amplitude = 1;
         float frequency = 1;
         for(int i = 0;i< octaves; i++)
         {
-            float sampleX = (position.x + 0.1f) / VoxelData.ChunkWidth * scale * frequency + offset;
-            float sampleY = (position.y + 0.1f) / VoxelData.ChunkWidth * scale * frequency + offset;
+            float sampleX = (position.x) / VoxelData.ChunkWidth * scale * frequency;
+            float sampleY = (position.y) / VoxelData.ChunkWidth * scale * frequency;
 
             float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
             noise =+ perlinValue * amplitude;
@@ -35,7 +45,9 @@ public static class Noise{
 
     public static float Get2DPerlin(Vector2 position, float offset, float scale)
     {
-        return Mathf.PerlinNoise((position.x + 0.1f)/VoxelData.ChunkWidth * scale + offset, (position.y + 0.1f) / VoxelData.ChunkWidth * scale + offset);
+        if (scale <= 0) scale = 0.00001f;
+        position = Offset2D(position, offset); 
+        return Mathf.PerlinNoise(position.x / VoxelData.ChunkWidth * scale, position.y / VoxelData.ChunkWidth * scale);
     }
 
     public static bool Get3DPerlin(Vector3 position, float offset, float scale, float threshold)

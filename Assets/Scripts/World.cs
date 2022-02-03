@@ -6,7 +6,6 @@ using System.IO;
 
 public class World : MonoBehaviour
 {
-    public Settings settings;
     public Transform player;
     public BiomeAttributes[] biomes;
 
@@ -44,7 +43,6 @@ public class World : MonoBehaviour
 
     private bool applyingModifications = false;
 
-    private string settingsPath = "/Settings/settings.cfg";
 
     private bool _inUI;
 
@@ -58,20 +56,17 @@ public class World : MonoBehaviour
     }
 
     
-
+    
     
 
     private void Start()
     {
-        Random.InitState(settings.worldSeed);
+        Debug.Log(VoxelData.seed);
+        Random.InitState(VoxelData.seed);
 
-        //string jsonExport = JsonUtility.ToJson(settings);
-        //Debug.Log(jsonExport);
-        //File.WriteAllText(Application.dataPath + "/Settings/settings.cfg", jsonExport);
-        string jsonImport = File.ReadAllText(Application.dataPath + settingsPath);
-        settings = JsonUtility.FromJson<Settings>(jsonImport);
-        
-        spawnPosition = new Vector3(VoxelData.WorldWidthInVoxels / 2, 96, VoxelData.WorldWidthInVoxels / 2);
+
+
+        SetSpawnPosition();
         GenerateWorld();
         playerLastChunkCoord = GetChunkCoorFromVector3(player.position);
 
@@ -80,7 +75,7 @@ public class World : MonoBehaviour
 
     private void OnEnable()
     {
-        if (settings.enableThreading)
+        if (VoxelData.settings.enableThreading)
         {
             ChunkUpdateThread = new Thread(new ThreadStart(ThreadedUpdate));
             ChunkUpdateThread.Start();
@@ -89,7 +84,7 @@ public class World : MonoBehaviour
 
     private void OnDisable()
     {
-        if (settings.enableThreading)
+        if (VoxelData.settings.enableThreading)
             ChunkUpdateThread.Abort();
     }
 
@@ -101,7 +96,7 @@ public class World : MonoBehaviour
         if (!playerChunkCoord.Equals(playerLastChunkCoord))
             CheckViewDistance();
 
-        if (!settings.enableThreading)
+        if (!VoxelData.settings.enableThreading)
         {
             CallUpdates();
         }
@@ -149,9 +144,9 @@ public class World : MonoBehaviour
 
     private void GenerateWorld()
     {
-        for(int x = (VoxelData.WorldWidthInChunks/2 ) - settings.ViewDistanceInChunks; x < (VoxelData.WorldWidthInChunks / 2) + settings.ViewDistanceInChunks; x++)
+        for(int x = (VoxelData.WorldWidthInChunks/2 ) - VoxelData.settings.ViewDistanceInChunks; x < (VoxelData.WorldWidthInChunks / 2) + VoxelData.settings.ViewDistanceInChunks; x++)
         {
-            for (int z = (VoxelData.WorldWidthInChunks / 2 ) - settings.ViewDistanceInChunks; z < (VoxelData.WorldWidthInChunks / 2) + settings.ViewDistanceInChunks; z++)
+            for (int z = (VoxelData.WorldWidthInChunks / 2 ) - VoxelData.settings.ViewDistanceInChunks; z < (VoxelData.WorldWidthInChunks / 2) + VoxelData.settings.ViewDistanceInChunks; z++)
             {
                 ChunkCoord coord = new ChunkCoord(x, z);
                 AddToChunksToCreate(coord);
@@ -165,6 +160,13 @@ public class World : MonoBehaviour
         CheckViewDistance();
     }
 
+    private void SetSpawnPosition()
+    {
+        Vector3 worldCentre = new Vector3(VoxelData.WorldCentre, VoxelData.ChunkHeight/2, VoxelData.WorldCentre);
+        int height;
+        SelectBiome(worldCentre, out height);
+        spawnPosition = new Vector3(worldCentre.x,height+1,worldCentre.z);
+    }
 
     ChunkCoord GetChunkCoorFromVector3(Vector3 _pos)
     {
@@ -189,9 +191,9 @@ public class World : MonoBehaviour
 
         activeChunks.Clear();
 
-        for (int x = coord.x - settings.ViewDistanceInChunks; x < coord.x + settings.ViewDistanceInChunks; x++)
+        for (int x = coord.x - VoxelData.settings.ViewDistanceInChunks; x < coord.x + VoxelData.settings.ViewDistanceInChunks; x++)
         {
-            for (int z = coord.z - settings.ViewDistanceInChunks; z < coord.z + settings.ViewDistanceInChunks; z++)
+            for (int z = coord.z - VoxelData.settings.ViewDistanceInChunks; z < coord.z + VoxelData.settings.ViewDistanceInChunks; z++)
             {
                 ChunkCoord thisChunkCoord = new ChunkCoord(x, z);
                 if (IsChunkInWorld(thisChunkCoord))
@@ -283,7 +285,7 @@ public class World : MonoBehaviour
     {
         while (biomeHeightMapsToFill.Count > 0)
         {
-            ChunkCoord c = biomeHeightMapsToFill.Dequeue();
+            ChunkCoord c = biomeHeightMapsToFill.Dequeue(); //Add lock to biomeHeightMaps
             chunks[c.x, c.z].FillBiomeAndHeight();
         }
     }
@@ -357,14 +359,14 @@ public class World : MonoBehaviour
     {
         int solidGroundHeight = 64;
         float sumOfHeights = 0f;
-        int count = 0;
+        //int count = 0; 
         float strongestWeight = 0;
         int strongestBiomeIndex = 0;
         BiomeAttributes biome;
 
         for (int i = 0; i < biomes.Length; i++)
         {
-            float weight = Noise.Get2DPerlin(new Vector2(pos.x, pos.z), biomes[i].offset, biomes[i].scale);
+            float weight = Noise.Get2DPerlin(new Vector2(pos.x, pos.z), biomes[i].offset, biomes[i].scale) * biomes[i].rarity;
 
             if (weight > strongestWeight)
             {
@@ -372,20 +374,24 @@ public class World : MonoBehaviour
                 strongestBiomeIndex = i;
             }
 
-            //float height = Noise.Get2DPerlinOct(new Vector2(pos.x, pos.z), 0, biomes[i].terrainScale, 3, 0.5f,2f) * biomes[i].terrainHeight * weight;
-            float height = Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biomes[i].terrainScale) * biomes[i].terrainHeight * weight;
-            if (height > 0)
-            {
-                sumOfHeights += height;
-                count++;
-            }
+            
+
+        }
+        for (int i = 0; i < biomes.Length; i++)
+        {
+
+            float weight = Noise.Get2DPerlin(new Vector2(pos.x, pos.z), biomes[i].offset, biomes[i].scale) * biomes[i].rarity;
+            float heightNoise = Noise.Get2DPerlinOct(new Vector2(pos.x, pos.z), 0, biomes[i].terrainScale, 3, 0.5f, 2f) ;
+            //float height = Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biomes[i].terrainScale) * biomes[i].terrainHeight * weight;
+            
+            sumOfHeights += Mathf.Lerp(-biomes[i].terrainHeight/2, biomes[i].terrainHeight/2, heightNoise * Mathf.Pow(1 - (strongestWeight - weight), 2));
+
 
         }
 
 
         biome = biomes[strongestBiomeIndex];
-        sumOfHeights /= count;
-        terrainHeight = Mathf.FloorToInt(sumOfHeights + solidGroundHeight);
+        terrainHeight = Mathf.FloorToInt(Mathf.Abs(sumOfHeights) + solidGroundHeight);
         return biome;
     }
 

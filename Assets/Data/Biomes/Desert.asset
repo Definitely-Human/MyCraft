@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: Desert
   offset: 2000
-  scale: 0.2
+  scale: 0.02
   terrainHeight: 32
   terrainScale: 0.05
   noiseId: 0
+  rarity: 1
   layerLength: 0400000003000000
   layerBlock: 05001200
   allLayerLength: 7

@@ -231,7 +231,7 @@ public class Chunk
         {
             world.chunksToUpdate.Add(this);
         }
-        if(world.settings.enableAnimatedChunks)
+        if(VoxelData.settings.enableAnimatedChunks)
             chunkObject.AddComponent<ChunkLoadAnimation>();
     }
 
@@ -245,10 +245,8 @@ public class Chunk
             VoxelState neighbor = CheckVoxel(pos + VoxelData.faceChecks[side]);
             if (!(world.IsVoxelInWorld(globalChunkPos + pos + VoxelData.faceChecks[side])) || (neighbor != null && world.blockTypes[neighbor.id].renderNeighborFaces))
             { //Add check if both voxels transpaent if so dont draw face
-                vertices.Add(VoxelData.voxelVerts[VoxelData.voxelTris[side,0]] + pos);
-                vertices.Add(VoxelData.voxelVerts[VoxelData.voxelTris[side,1]] + pos);
-                vertices.Add(VoxelData.voxelVerts[VoxelData.voxelTris[side,2]] + pos);
-                vertices.Add(VoxelData.voxelVerts[VoxelData.voxelTris[side,3]] + pos);
+                for(int p = 0; p < 4; p++)
+                    vertices.Add(VoxelData.voxelVerts[VoxelData.voxelTris[side,p]] + pos);
 
                 for (int i = 0; i <= 3; i++)
                     normals.Add(VoxelData.faceChecks[side]);

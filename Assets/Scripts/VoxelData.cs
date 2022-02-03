@@ -9,6 +9,12 @@ public static class VoxelData
     public static readonly int ChunkHeight = 256;
     public static readonly int WorldWidthInChunks = 150;
 
+    public static int seed;
+    public static Settings settings;
+
+    public static int WorldCentre{
+        get { return (WorldWidthInChunks * ChunkWidth) / 2; }
+    }
 
     public static int WorldWidthInVoxels
     {

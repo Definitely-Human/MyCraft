@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: Grasslands
   offset: 1000
-  scale: 0.3
+  scale: 0.03
   terrainHeight: 15
   terrainScale: 0.15
   noiseId: 0
+  rarity: 1
   layerLength: 0100000004000000
   layerBlock: 03000400
   allLayerLength: 5
@@ -25,7 +26,7 @@ MonoBehaviour:
   MajorFloraZoneScale: 1.3
   MajorFloraZoneThereshold: 0.6
   MajorFloraPlacementScale: 15
-  MajorFloraPlacementThereshold: 0.872
+  MajorFloraPlacementThereshold: 0.868
   placeMajorFlora: 1
   maxSize: 12
   minSize: 5
