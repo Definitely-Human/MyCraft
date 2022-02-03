@@ -64,7 +64,8 @@ public class Chunk
         coord = _coord;
         world = _world;
 
-
+        globalChunkPos = new Vector3(coord.x * VoxelData.ChunkWidth, 0, coord.z * VoxelData.ChunkWidth);
+        
     }
 
     
@@ -80,14 +81,18 @@ public class Chunk
         materials[1] = world.transparentMaterial;
         meshRenderer.materials = materials;
 
-        chunkObject.transform.SetParent(world.transform);
-        chunkObject.transform.position = new Vector3(coord.x * VoxelData.ChunkWidth, 0, coord.z * VoxelData.ChunkWidth);
-        chunkObject.name = "Chunk " + coord.x + " " + coord.z;
-        globalChunkPos = chunkObject.transform.position;
+        SetPosInWorld();
 
-        FillBiomeAndHeight();
+        chunkObject.name = "Chunk " + coord.x + " " + coord.z;
+
 
         PopulateVoxelMap();
+    }
+
+    public void SetPosInWorld()
+    {
+        chunkObject.transform.SetParent(world.transform);
+        chunkObject.transform.position = globalChunkPos;
     }
 
     Vector3Int VectFToI(Vector3 v)
@@ -238,8 +243,8 @@ public class Chunk
         for (byte side = 0; side < 6; side++)
         {
             VoxelState neighbor = CheckVoxel(pos + VoxelData.faceChecks[side]);
-            if (neighbor != null && world.blockTypes[neighbor.id].renderNeighborFaces)
-            {
+            if (!(world.IsVoxelInWorld(globalChunkPos + pos + VoxelData.faceChecks[side])) || (neighbor != null && world.blockTypes[neighbor.id].renderNeighborFaces))
+            { //Add check if both voxels transpaent if so dont draw face
                 vertices.Add(VoxelData.voxelVerts[VoxelData.voxelTris[side,0]] + pos);
                 vertices.Add(VoxelData.voxelVerts[VoxelData.voxelTris[side,1]] + pos);
                 vertices.Add(VoxelData.voxelVerts[VoxelData.voxelTris[side,2]] + pos);

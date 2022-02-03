@@ -17,6 +17,7 @@ MonoBehaviour:
   scale: 0.3
   terrainHeight: 15
   terrainScale: 0.15
+  noiseId: 0
   layerLength: 0100000004000000
   layerBlock: 03000400
   allLayerLength: 5

@@ -32,6 +32,7 @@ public class World : MonoBehaviour
     private List<ChunkCoord> activeChunks = new List<ChunkCoord>();
 
     private List<ChunkCoord> chunksToCreate = new List<ChunkCoord>();
+    private Queue<ChunkCoord> biomeHeightMapsToFill = new Queue<ChunkCoord>();
     public List<Chunk> chunksToUpdate = new List<Chunk>();
     public Queue<Chunk> chunksToDraw = new Queue<Chunk>();
     private bool isCreatingChunks;
@@ -135,6 +136,9 @@ public class World : MonoBehaviour
 
     private void CallUpdates()
     {
+
+        if (biomeHeightMapsToFill.Count > 0)
+            FillBiomeHeightMaps();
         if (modifications.Count > 0 && !applyingModifications)
         {
             ApplyModifications();
@@ -150,8 +154,7 @@ public class World : MonoBehaviour
             for (int z = (VoxelData.WorldWidthInChunks / 2 ) - settings.ViewDistanceInChunks; z < (VoxelData.WorldWidthInChunks / 2) + settings.ViewDistanceInChunks; z++)
             {
                 ChunkCoord coord = new ChunkCoord(x, z);
-                chunks[x, z] = new Chunk(coord, this);
-                chunksToCreate.Add(coord);
+                AddToChunksToCreate(coord);
             }
         }
 
@@ -195,8 +198,7 @@ public class World : MonoBehaviour
                 {
                     if(chunks[x,z] == null)
                     {
-                        chunks[x, z] = new Chunk(thisChunkCoord, this);
-                        chunksToCreate.Add(thisChunkCoord);
+                        AddToChunksToCreate(thisChunkCoord);
                     }
                     else if (!chunks[x, z].IsActive)
                     {
@@ -277,6 +279,15 @@ public class World : MonoBehaviour
         chunks[c.x, c.z].InitChunk();
     }
 
+    private void FillBiomeHeightMaps()
+    {
+        while (biomeHeightMapsToFill.Count > 0)
+        {
+            ChunkCoord c = biomeHeightMapsToFill.Dequeue();
+            chunks[c.x, c.z].FillBiomeAndHeight();
+        }
+    }
+
     void UpdateChunks()
     {
         bool updated = false;
@@ -309,7 +320,7 @@ public class World : MonoBehaviour
         {
             Queue<VoxelMod> queue = modifications.Dequeue();
             if (queue == null)
-                Debug.Log("null");
+                continue;
          
             while (queue.Count > 0)
             {
@@ -320,18 +331,26 @@ public class World : MonoBehaviour
                 if (!IsChunkInWorld(c)) continue;
                 if (chunks[c.x, c.z] == null)
                 {
-                    chunks[c.x, c.z] = new Chunk(c, this);
-                    chunksToCreate.Add(c);
+                    AddToChunksToCreate(c);
                 }
 
                 chunks[c.x, c.z].modifications.Enqueue(v);
 
-                
+                // Add chunks to UpdateChunks list
 
             }
         }
 
         applyingModifications = false;
+    }
+
+    private void AddToChunksToCreate(ChunkCoord c)
+    {
+        Chunk thisChunk = new Chunk(c, this);
+        chunks[c.x, c.z] = thisChunk;
+
+        biomeHeightMapsToFill.Enqueue(c);
+        chunksToCreate.Add(c);
     }
 
     public BiomeAttributes SelectBiome(Vector3 pos,out int terrainHeight)
